@@ -19,6 +19,8 @@
 "General" = "Общее";
 "Launch at Login" = "Запускать при входе";
 "Show Menu Bar Icon" = "Показывать иконку в меню-баре";
+"Open Delay" = "Задержка открытия";
+"%d ms" = "%d мс";
 "Show in Panel" = "Показывать в панели";
 "Displays" = "Дисплеи";
 "Show on All Displays" = "Показывать на всех дисплеях";
@@ -53,6 +55,7 @@
 "Remove from Shelf" = "Убрать с полки";
 
 /* Музыка */
+"No artwork" = "Обложки нет";
 "Nothing is playing" = "Ничего не играет";
 
 /* Заготовки */

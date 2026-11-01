@@ -18,6 +18,7 @@ struct SettingsPane: View {
     @State private var allDisplays = NotchGeometry.showsOnAllDisplays
     @State private var fullSizeNotch = NotchGeometry.drawsFullSizeNotch
     @State private var transparentNotch = NotchGeometry.drawsTransparentNotch
+    @State private var openDelay = ConfigStore.shared.openDelay
     @State private var watchScreenshotFolder = false
     @State private var screenshotUsage: (files: Int, bytes: Int64) = (0, 0)
 
@@ -38,6 +39,7 @@ struct SettingsPane: View {
                         title: localized("Show Menu Bar Icon"),
                         isOn: menuBarIconVisibleBinding
                     )
+                    openDelayRow
                 }
 
                 // The rail is for what gets a glance between other things.
@@ -142,6 +144,8 @@ struct SettingsPane: View {
             allDisplays = NotchGeometry.showsOnAllDisplays
             fullSizeNotch = NotchGeometry.drawsFullSizeNotch
             transparentNotch = NotchGeometry.drawsTransparentNotch
+            // `config.json` is meant to be edited by hand too.
+            openDelay = ConfigStore.shared.openDelay
             watchScreenshotFolder = screenshots.isEnabled
             refreshUsage()
         }
@@ -236,6 +240,18 @@ struct SettingsPane: View {
         )
     }
 
+    /// Takes effect on the next hover, on every screen: the pointer watchers
+    /// read it each time they decide, so nothing has to be rebuilt.
+    private var openDelayBinding: Binding<Double> {
+        Binding(
+            get: { openDelay },
+            set: { seconds in
+                openDelay = seconds
+                ConfigStore.shared.openDelay = seconds
+            }
+        )
+    }
+
     /// Turning off is instant. Turning on goes through the Open panel first —
     /// `requestAccess` is itself the consent, so the switch only follows what
     /// actually happened once the panel closes, not the click that opened it.
@@ -296,6 +312,32 @@ struct SettingsPane: View {
             Toggle("", isOn: isOn)
                 .toggleStyle(NotchToggleStyle())
                 .labelsHidden()
+        }
+        .padding(.horizontal, 8)
+        .frame(height: 26)
+    }
+
+    /// A slider, like the teleprompter's speed: the right wait is found by
+    /// moving it and reaching for the notch, not by picking from a list.
+    /// From 50 ms, the old wait, up to well past any overshoot.
+    private var openDelayRow: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "timer")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(Theme.secondary)
+                .frame(width: 16)
+            Text(localized("Open Delay"))
+                .font(.system(size: 11.5, weight: .medium))
+                .foregroundStyle(.white)
+            Spacer(minLength: 8)
+            Slider(value: openDelayBinding, in: ConfigStore.openDelayRange, step: 0.05)
+                .controlSize(.mini)
+                .tint(.white.opacity(0.7))
+                .frame(width: 96)
+            Text(localized("%d ms", Int((openDelay * 1000).rounded())))
+                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                .foregroundStyle(Theme.secondary)
+                .frame(width: 44, alignment: .trailing)
         }
         .padding(.horizontal, 8)
         .frame(height: 26)
